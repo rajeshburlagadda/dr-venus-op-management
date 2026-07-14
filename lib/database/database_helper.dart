@@ -2,27 +2,25 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 class DatabaseHelper {
-  static final DatabaseHelper instance = DatabaseHelper._init();
+  DatabaseHelper._privateConstructor();
+  static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
 
   static Database? _database;
 
-  DatabaseHelper._init();
-
   Future<Database> get database async {
     if (_database != null) return _database!;
-
-    _database = await _initDB('dr_venus.db');
+    _database = await _initDatabase();
     return _database!;
   }
 
-  Future<Database> _initDB(String filePath) async {
+  Future<Database> _initDatabase() async {
     final dbPath = await getDatabasesPath();
-    final path = join(dbPath, filePath);
+    final path = join(dbPath, 'dr_venus.db');
 
-    return await openDatabase(path, version: 1, onCreate: _createDB);
+    return await openDatabase(path, version: 1, onCreate: _createDatabase);
   }
 
-  Future _createDB(Database db, int version) async {
+  Future _createDatabase(Database db, int version) async {
     await db.execute('''
       CREATE TABLE patients(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -40,17 +38,27 @@ class DatabaseHelper {
   }
 
   Future<int> insertPatient(Map<String, dynamic> patient) async {
-    final db = await instance.database;
+    final db = await database;
     return await db.insert('patients', patient);
   }
 
   Future<List<Map<String, dynamic>>> getPatients() async {
-    final db = await instance.database;
+    final db = await database;
     return await db.query('patients', orderBy: 'id DESC');
   }
 
-  Future close() async {
-    final db = await instance.database;
-    db.close();
+  Future<int> updatePatient(int id, Map<String, dynamic> patient) async {
+    final db = await database;
+    return await db.update(
+      'patients',
+      patient,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<int> deletePatient(int id) async {
+    final db = await database;
+    return await db.delete('patients', where: 'id = ?', whereArgs: [id]);
   }
 }
