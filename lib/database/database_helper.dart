@@ -1,5 +1,6 @@
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import '../models/patient_model.dart';
 
 class DatabaseHelper {
   DatabaseHelper._privateConstructor();
@@ -45,6 +46,14 @@ class DatabaseHelper {
   Future<List<Map<String, dynamic>>> getPatients() async {
     final db = await database;
     return await db.query('patients', orderBy: 'id DESC');
+  }
+
+  Future<List<Patient>> getAllPatients() async {
+    final db = await database;
+
+    final result = await db.query('patients', orderBy: 'id DESC');
+
+    return result.map((e) => Patient.fromMap(e)).toList();
   }
 
   Future<int> updatePatient(int id, Map<String, dynamic> patient) async {

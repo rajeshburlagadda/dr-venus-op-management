@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'patient_list_screen.dart';
 import '../database/database_helper.dart';
 import '../models/patient_model.dart';
 
@@ -130,6 +131,27 @@ class _PatientScreenState extends State<PatientScreen> {
                   "SAVE",
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
+              ),
+            ),
+            const SizedBox(height: 15),
+
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.list),
+                label: const Text(
+                  "VIEW PATIENTS",
+                  style: TextStyle(fontSize: 18),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PatientListScreen(),
+                    ),
+                  );
+                },
               ),
             ),
           ],
