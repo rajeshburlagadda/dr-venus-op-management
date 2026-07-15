@@ -4,7 +4,9 @@ import '../database/database_helper.dart';
 import '../models/patient_model.dart';
 
 class PatientScreen extends StatefulWidget {
-  const PatientScreen({super.key});
+  final Patient? patient;
+
+  const PatientScreen({super.key, this.patient});
 
   @override
   State<PatientScreen> createState() => _PatientScreenState();
@@ -17,36 +19,60 @@ class _PatientScreenState extends State<PatientScreen> {
   final addressController = TextEditingController();
 
   String gender = "Male";
+  bool isEdit = false;
+  @override
+  void initState() {
+    super.initState();
+    print(widget.patient);
+    print(widget.patient?.name);
+
+    if (widget.patient != null) {
+      isEdit = true;
+
+      nameController.text = widget.patient!.name;
+      ageController.text = widget.patient!.age.toString();
+      mobileController.text = widget.patient!.mobile;
+      addressController.text = widget.patient!.address;
+
+      gender = widget.patient!.gender;
+    }
+  }
 
   Future<void> savePatient() async {
     final patient = Patient(
-      patientId: "DV${DateTime.now().millisecondsSinceEpoch}",
+      id: widget.patient?.id,
+      patientId:
+          widget.patient?.patientId ??
+          "DV${DateTime.now().millisecondsSinceEpoch}",
       name: nameController.text,
       age: int.tryParse(ageController.text) ?? 0,
       gender: gender,
       mobile: mobileController.text,
       address: addressController.text,
-      branch: "",
-      doctor: "",
-      date: DateTime.now().toString(),
+      branch: widget.patient?.branch ?? "",
+      doctor: widget.patient?.doctor ?? "",
+      date: widget.patient?.date ?? DateTime.now().toString(),
     );
 
-    await DatabaseHelper.instance.insertPatient(patient.toMap());
-
-    nameController.clear();
-    ageController.clear();
-    mobileController.clear();
-    addressController.clear();
-
-    setState(() {
-      gender = "Male";
-    });
+    if (isEdit) {
+      await DatabaseHelper.instance.updatePatient(patient.id!, patient.toMap());
+    } else {
+      await DatabaseHelper.instance.insertPatient(patient.toMap());
+    }
 
     if (!mounted) return;
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text("Patient Saved Successfully")));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          isEdit
+              ? "Patient Updated Successfully"
+              : "Patient Saved Successfully",
+        ),
+      ),
+    );
+
+    Navigator.pop(context);
   }
 
   @override
@@ -127,9 +153,12 @@ class _PatientScreenState extends State<PatientScreen> {
               height: 50,
               child: ElevatedButton(
                 onPressed: savePatient,
-                child: const Text(
-                  "SAVE",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                child: Text(
+                  isEdit ? "UPDATE" : "SAVE",
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),

@@ -56,6 +56,18 @@ class DatabaseHelper {
     return result.map((e) => Patient.fromMap(e)).toList();
   }
 
+  Future<Patient?> getPatientById(int id) async {
+    final db = await database;
+
+    final result = await db.query('patients', where: 'id = ?', whereArgs: [id]);
+
+    if (result.isNotEmpty) {
+      return Patient.fromMap(result.first);
+    }
+
+    return null;
+  }
+
   Future<int> updatePatient(int id, Map<String, dynamic> patient) async {
     final db = await database;
     return await db.update(
